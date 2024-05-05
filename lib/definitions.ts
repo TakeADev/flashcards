@@ -1,6 +1,6 @@
 export type User = {
+  email: string;
   displayName: string;
   name: string;
-  bio: string;
   collections: string[];
 };
