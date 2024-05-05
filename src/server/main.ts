@@ -8,7 +8,8 @@ const app = express();
 import { usersToSeed } from './db/data/users.js';
 import { seedUsers } from './db/seed.js';
 
-import pg from 'pg';
+import pg, { QueryResult } from 'pg';
+import * as db from './db/index.js';
 
 const { Pool } = pg;
 
@@ -31,8 +32,12 @@ app.get('/seed', (_, res) => {
   res.send('Hello Vite + React + TypeScript!');
 });
 
-app.get('/getusers', (_, res) => {
-  pool.query('SELECT * FROM users;').then((resp) => res.send(resp.rows));
+app.get('/getuser', async (_, res) => {
+  try {
+    await db.query(`SELECT * FROM users`).then((result) => res.send(result.rows[0]));
+  } catch (error) {
+    res.send(`There was an error: ${error}`);
+  }
 });
 
 app.get('/deleteusers', (_, res) => {
