@@ -8,7 +8,7 @@ const app = express();
 import { usersToSeed } from './db/data/users.js';
 import { seedUsers } from './db/seed.js';
 
-import pg, { QueryResult } from 'pg';
+import pg from 'pg';
 import * as db from './db/index.js';
 
 const { Pool } = pg;
@@ -24,11 +24,9 @@ const PORT = process.env.SERVER_PORT || 8080;
 
 app.get('/seed', (_, res) => {
   try {
-    seedUsers(usersToSeed);
   } catch (error) {
     console.log(error);
   }
-  seedUsers(usersToSeed);
   res.send('Hello Vite + React + TypeScript!');
 });
 
