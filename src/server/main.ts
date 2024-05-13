@@ -3,13 +3,13 @@ dotenv.config();
 
 import express from 'express';
 import ViteExpress from 'vite-express';
-const app = express();
-
-import { usersToSeed } from './db/data/users.js';
-import { seedUsers } from './db/seed.js';
+import bodyParser from 'body-parser';
 
 import pg from 'pg';
 import * as db from './db/index.js';
+
+const app = express();
+app.use(bodyParser.json());
 
 const { Pool } = pg;
 
@@ -21,6 +21,21 @@ const pool = new Pool({
 });
 
 const PORT = process.env.SERVER_PORT || 8080;
+
+app.post('/signup', async (req, res) => {
+  const { email, name, password } = req.body;
+
+  try {
+    db.query(`INSERT INTO users(email, name, password, collections) VALUES($1, $2, $3, $4)`, [
+      email,
+      name,
+      password,
+      [],
+    ]).then();
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 app.get('/seed', (_, res) => {
   try {
