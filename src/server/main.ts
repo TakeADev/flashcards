@@ -4,58 +4,47 @@ dotenv.config();
 import express from 'express';
 import ViteExpress from 'vite-express';
 import bodyParser from 'body-parser';
+import bcrypt from 'bcrypt';
 
-import pg from 'pg';
 import * as db from './db/index.js';
 
+const PORT = process.env.SERVER_PORT || 8080;
 const app = express();
 app.use(bodyParser.json());
 
-const { Pool } = pg;
+function verifyUser(email: string, password: string) {
+  try {
+    db.query(`SELECT * FROM users WHERE email=($1);`, [email]).then((queryResult) =>
+      bcrypt.compare(password, queryResult.rows[0].password).then((comparison) => {
+        return comparison;
+      })
+    );
+  } catch (error) {
+    return error;
+  }
+}
 
-const pool = new Pool({
-  user: process.env.POSTGRESDB_USER,
-  password: process.env.POSTGRESDB_PASSWORD,
-  host: process.env.POSTGRESDB_HOST,
-  database: process.env.POSTGRESDB_DATABASE,
-});
-
-const PORT = process.env.SERVER_PORT || 8080;
-
-app.post('/signup', async (req, res) => {
+app.post('/signup', async (req, res, next) => {
   const { email, name, password } = req.body;
-
-  try {
-    db.query(`INSERT INTO users(email, name, password, collections) VALUES($1, $2, $3, $4)`, [
-      email,
-      name,
-      password,
-      [],
-    ]).then();
-  } catch (error) {
-    console.log(error);
-  }
+  bcrypt.hash(password, 10, (err, hash) => {
+    if (err) return alert(err);
+    try {
+      return db.query(
+        `INSERT INTO users(email, name, password, collections) VALUES($1, $2, $3, $4)`,
+        [email, name, hash, []]
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  });
 });
 
-app.get('/seed', (_, res) => {
-  try {
-  } catch (error) {
-    console.log(error);
-  }
-  res.send('Hello Vite + React + TypeScript!');
+app.get('/fail', (req, res) => {
+  res.send('failed');
 });
 
-app.get('/getuser', async (_, res) => {
-  try {
-    await db.query(`SELECT * FROM users`).then((result) => res.send(result.rows[0]));
-  } catch (error) {
-    res.send(`There was an error: ${error}`);
-  }
-});
-
-app.get('/deleteusers', (_, res) => {
-  pool.query('DELETE FROM users;');
-  res.send('users deleted');
+app.post('/login', (req, res) => {
+  return;
 });
 
 ViteExpress.listen(app, PORT as number, () =>
