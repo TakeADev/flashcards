@@ -2,14 +2,14 @@ import { useState } from 'react';
 
 type SignUpFormFields = {
   email: string;
-  name: string;
+  displayName: string;
   password: string;
   confirmPassword: string;
 };
 
 const defaultFormFields: SignUpFormFields = {
   email: '',
-  name: '',
+  displayName: '',
   password: '',
   confirmPassword: '',
 };
@@ -59,8 +59,8 @@ export default function () {
             <input
               type='text'
               className='border border-red-500'
-              value={formFields.name}
-              name='name'
+              value={formFields.displayName}
+              name='displayName'
               onChange={changeHandler}
             />
           </div>
@@ -75,7 +75,7 @@ export default function () {
             />
           </div>
           <div>
-            <label className=''>Name:</label>
+            <label className=''>Confirm Password:</label>
             <input
               type='password'
               className='border border-red-500'
