@@ -57,13 +57,14 @@ app.post('/api/auth/verify', async (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
-  jwt.verify(token, process.env.JWT_SECRET || 'secret', (err, decoded) => {
-    if (err?.name === 'TokenExpiredError') {
-      res.status(200).json({ token: false });
-    } else if (err) {
-      res.status(401).json({ error: err });
-    } else res.status(200).json({ token: decoded });
-  });
+  token &&
+    jwt.verify(token, process.env.JWT_SECRET || 'secret', (err, decoded) => {
+      if (err?.name === 'TokenExpiredError') {
+        res.status(200).json({ token: false });
+      } else if (err) {
+        res.status(401).json({ error: err });
+      } else res.status(200).json({ token: decoded });
+    });
 });
 
 ViteExpress.listen(app, PORT as number, () =>
