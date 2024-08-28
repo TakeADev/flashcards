@@ -28,7 +28,7 @@ export default function () {
   function submitHandler(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     console.log(JSON.stringify(formFields));
-    fetch('/signup', {
+    fetch('/api/auth/signup', {
       method: 'POST',
       mode: 'cors',
       cache: 'no-cache',
