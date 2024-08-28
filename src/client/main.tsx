@@ -16,12 +16,14 @@ import ProtectedRoute from './components/ProtectedRoute';
 const router = createBrowserRouter([
   {
     path: '/',
-    element: (
-      <ProtectedRoute>
-        <Root />
-      </ProtectedRoute>
-    ),
+    element: <ProtectedRoute />,
     errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <Root />,
+      },
+    ],
   },
   {
     path: '/signup',
