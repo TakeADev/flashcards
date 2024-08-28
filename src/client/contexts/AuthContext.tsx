@@ -33,8 +33,6 @@ function AuthProvider({ children }: Props) {
       });
   }, [userToken]);
 
-  console.log(isAuthenticated);
-
   const value = {
     isAuthenticated,
     isLoading,
