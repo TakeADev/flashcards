@@ -54,7 +54,8 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 app.post('/api/auth/verify', async (req, res) => {
-  let token = req.body.token;
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
   jwt.verify(token, process.env.JWT_SECRET || 'secret', (err, decoded) => {
     if (err?.name === 'TokenExpiredError') {
