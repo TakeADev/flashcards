@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 type LoginFormFields = {
-  username: string;
+  email: string;
   password: string;
 };
 
 const defaultFormFields: LoginFormFields = {
-  username: '',
+  email: '',
   password: '',
 };
 
@@ -23,7 +24,7 @@ export default function () {
 
   function submitHandler(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    fetch('/login', {
+    fetch('/api/auth/login', {
       method: 'POST',
       mode: 'cors',
       cache: 'no-cache',
@@ -33,9 +34,13 @@ export default function () {
       referrer: 'no-referrer',
       body: JSON.stringify(formFields),
     }).then((res) => {
-      return console.log(res.status);
+      res.json().then((json) => {
+        localStorage.setItem('token', json.token);
+      });
     });
   }
+
+  let token = localStorage.getItem('token');
 
   return (
     <div className='flex h-screen w-full'>
@@ -46,8 +51,8 @@ export default function () {
             <input
               type='text'
               className='border border-red-500'
-              value={formFields.username}
-              name='username'
+              value={formFields.email}
+              name='email'
               onChange={changeHandler}
             />
           </div>
