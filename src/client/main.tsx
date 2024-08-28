@@ -11,11 +11,16 @@ import SignUpPage from './pages/signup/SignUpPage';
 import LoginPage from './pages/login/LoginPage';
 import UserProvider from './contexts/UserContext';
 import AuthProvider from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Root />,
+    element: (
+      <ProtectedRoute>
+        <Root />
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorPage />,
   },
   {
