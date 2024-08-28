@@ -4,58 +4,67 @@ dotenv.config();
 import express from 'express';
 import ViteExpress from 'vite-express';
 import bodyParser from 'body-parser';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 
-import pg from 'pg';
+import { User } from '../../lib/definitions.js';
+
 import * as db from './db/index.js';
 
+const PORT = process.env.SERVER_PORT || 8080;
 const app = express();
 app.use(bodyParser.json());
 
-const { Pool } = pg;
-
-const pool = new Pool({
-  user: process.env.POSTGRESDB_USER,
-  password: process.env.POSTGRESDB_PASSWORD,
-  host: process.env.POSTGRESDB_HOST,
-  database: process.env.POSTGRESDB_DATABASE,
+app.post('/api/auth/signup', async (req, res, next) => {
+  const { email, displayName, password } = req.body;
+  bcrypt.hash(password, 10, (err, hash) => {
+    if (err) return alert(err);
+    try {
+      return db.query(
+        `INSERT INTO users(id, email, display_name, password, collections) VALUES($1, $2, $3, $4, $5)`,
+        [uuidv4(), email, displayName, hash, []]
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  });
 });
 
-const PORT = process.env.SERVER_PORT || 8080;
-
-app.post('/signup', async (req, res) => {
-  const { email, name, password } = req.body;
-
+app.post('/api/auth/login', async (req, res) => {
   try {
-    db.query(`INSERT INTO users(email, name, password, collections) VALUES($1, $2, $3, $4)`, [
-      email,
-      name,
-      password,
-      [],
-    ]).then();
+    const { email, password } = req.body;
+    const foundUser: User.DBUser = await db
+      .query(`SELECT * FROM users WHERE email=($1);`, [email])
+      .then((res) => res.rows[0]);
+
+    if (!foundUser) return res.status(401).json({ error: 'Invalid email or password.' });
+
+    const passwordMatch = await bcrypt.compare(password, foundUser.password);
+    if (!passwordMatch) return res.status(401).json({ error: 'Invalid email or password.' });
+
+    const token = jwt.sign({ userId: foundUser.id }, process.env.JWT_SECRET || 'secret', {
+      expiresIn: '1h',
+    });
+
+    res.status(200).json({ token: token, email: email });
   } catch (error) {
-    console.log(error);
+    res.status(500).json({ error: 'Authentication error' });
   }
 });
 
-app.get('/seed', (_, res) => {
-  try {
-  } catch (error) {
-    console.log(error);
-  }
-  res.send('Hello Vite + React + TypeScript!');
-});
+app.post('/api/auth/verify', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-app.get('/getuser', async (_, res) => {
-  try {
-    await db.query(`SELECT * FROM users`).then((result) => res.send(result.rows[0]));
-  } catch (error) {
-    res.send(`There was an error: ${error}`);
-  }
-});
-
-app.get('/deleteusers', (_, res) => {
-  pool.query('DELETE FROM users;');
-  res.send('users deleted');
+  token &&
+    jwt.verify(token, process.env.JWT_SECRET || 'secret', (err, decoded) => {
+      if (err?.name === 'TokenExpiredError') {
+        res.status(200).json({ token: false });
+      } else if (err) {
+        res.status(401).json({ error: err });
+      } else res.status(200).json({ token: decoded });
+    });
 });
 
 ViteExpress.listen(app, PORT as number, () =>

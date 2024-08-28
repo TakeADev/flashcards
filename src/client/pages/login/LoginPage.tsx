@@ -1,21 +1,28 @@
-import { useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-type SignUpFormFields = {
+import { AuthContext } from '../../contexts/AuthContext';
+import { validateToken } from '../../utils/auth';
+
+type LoginFormFields = {
   email: string;
-  displayName: string;
   password: string;
-  confirmPassword: string;
 };
 
-const defaultFormFields: SignUpFormFields = {
+const defaultFormFields: LoginFormFields = {
   email: '',
-  displayName: '',
   password: '',
-  confirmPassword: '',
 };
 
 export default function () {
-  const [formFields, setFormFields] = useState<SignUpFormFields>(defaultFormFields);
+  const navigate = useNavigate();
+  const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (isAuthenticated) navigate('/');
+  }, [isAuthenticated]);
+
+  const [formFields, setFormFields] = useState<LoginFormFields>(defaultFormFields);
 
   function changeHandler(e: React.FormEvent<HTMLInputElement>) {
     e.target &&
@@ -27,8 +34,7 @@ export default function () {
 
   function submitHandler(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log(JSON.stringify(formFields));
-    fetch('/api/auth/signup', {
+    fetch('/api/auth/login', {
       method: 'POST',
       mode: 'cors',
       cache: 'no-cache',
@@ -37,7 +43,15 @@ export default function () {
       redirect: 'follow',
       referrer: 'no-referrer',
       body: JSON.stringify(formFields),
-    }).then((res) => console.log(res));
+    }).then((res) => {
+      res.json().then((json) => {
+        localStorage.setItem('token', json.token);
+        setIsAuthenticated(true);
+        if (isAuthenticated) {
+          navigate('/');
+        }
+      });
+    });
   }
 
   return (
@@ -55,32 +69,12 @@ export default function () {
             />
           </div>
           <div>
-            <label className=''>Name:</label>
-            <input
-              type='text'
-              className='border border-red-500'
-              value={formFields.displayName}
-              name='displayName'
-              onChange={changeHandler}
-            />
-          </div>
-          <div>
             <label className=''>Password:</label>
             <input
               type='password'
               className='border border-red-500'
               value={formFields.password}
               name='password'
-              onChange={changeHandler}
-            />
-          </div>
-          <div>
-            <label className=''>Confirm Password:</label>
-            <input
-              type='password'
-              className='border border-red-500'
-              value={formFields.confirmPassword}
-              name='confirmPassword'
               onChange={changeHandler}
             />
           </div>

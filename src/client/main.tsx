@@ -8,22 +8,41 @@ import './index.css';
 import Root from './pages/root/Root';
 import ErrorPage from './pages/ErrorPage';
 import SignUpPage from './pages/signup/SignUpPage';
+import LoginPage from './pages/login/LoginPage';
+import UserProvider from './contexts/UserContext';
+import AuthProvider from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Root />,
+    element: <ProtectedRoute />,
     errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <Root />,
+      },
+    ],
   },
   {
     path: '/signup',
     element: <SignUpPage />,
     errorElement: <ErrorPage />,
   },
+  {
+    path: '/login',
+    element: <LoginPage />,
+    errorElement: <ErrorPage />,
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <UserProvider>
+        <RouterProvider router={router} />
+      </UserProvider>
+    </AuthProvider>
   </React.StrictMode>
 );

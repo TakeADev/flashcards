@@ -1,3 +1,17 @@
+import { useContext } from 'react';
+
+import { AuthContext } from '../../contexts/AuthContext';
+
 export default function Root() {
-  return <div className='text-red-400'>Root</div>;
+  const { setIsAuthenticated } = useContext(AuthContext);
+  function logoutHandler() {
+    localStorage.removeItem('token');
+    setIsAuthenticated(false);
+  }
+
+  return (
+    <div className=''>
+      <span onClick={logoutHandler}>Log out</span>
+    </div>
+  );
 }
