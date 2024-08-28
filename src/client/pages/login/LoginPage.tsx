@@ -1,5 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+import { AuthContext } from '../../contexts/AuthContext';
+import { validateToken } from '../../utils/auth';
 
 type LoginFormFields = {
   email: string;
@@ -12,6 +15,13 @@ const defaultFormFields: LoginFormFields = {
 };
 
 export default function () {
+  const navigate = useNavigate();
+  const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (isAuthenticated) navigate('/');
+  }, [isAuthenticated]);
+
   const [formFields, setFormFields] = useState<LoginFormFields>(defaultFormFields);
 
   function changeHandler(e: React.FormEvent<HTMLInputElement>) {
@@ -36,11 +46,13 @@ export default function () {
     }).then((res) => {
       res.json().then((json) => {
         localStorage.setItem('token', json.token);
+        setIsAuthenticated(true);
+        if (isAuthenticated) {
+          navigate('/');
+        }
       });
     });
   }
-
-  let token = localStorage.getItem('token');
 
   return (
     <div className='flex h-screen w-full'>
