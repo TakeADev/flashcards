@@ -1,4 +1,4 @@
-import { ReactNode, createContext, useEffect, useState } from 'react';
+import { ReactNode, SetStateAction, createContext, useEffect, useState, Dispatch } from 'react';
 
 import { validateToken } from '../utils/auth';
 
@@ -8,11 +8,13 @@ interface Props {
 
 interface IAuthContext {
   isAuthenticated: boolean;
+  setIsAuthenticated: Dispatch<SetStateAction<boolean>>;
   isLoading: boolean;
 }
 
 export const AuthContext = createContext<IAuthContext>({
   isAuthenticated: false,
+  setIsAuthenticated: () => {},
   isLoading: true,
 });
 
@@ -22,7 +24,7 @@ function AuthProvider({ children }: Props) {
   const userToken = localStorage.getItem('token');
 
   useEffect(() => {
-    userToken &&
+    if (userToken) {
       validateToken(userToken).then((res) => {
         if (res.token) {
           setIsLoading(false);
@@ -31,10 +33,15 @@ function AuthProvider({ children }: Props) {
         setIsLoading(false);
         return setIsAuthenticated(false);
       });
+    } else {
+      setIsAuthenticated(false);
+      setIsLoading(false);
+    }
   }, [userToken]);
 
   const value = {
     isAuthenticated,
+    setIsAuthenticated,
     isLoading,
   };
 
