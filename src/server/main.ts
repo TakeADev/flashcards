@@ -67,6 +67,12 @@ app.post('/api/auth/verify', async (req, res) => {
     });
 });
 
+app.post('/api/users/getuser', (req, res) => {
+  const { token } = req.body;
+  console.log(req.body);
+  res.status(200).json({ user: token });
+});
+
 ViteExpress.listen(app, PORT as number, () =>
   console.log(`Server is listening on port ${PORT}...`)
 );
