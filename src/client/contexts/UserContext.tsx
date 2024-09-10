@@ -36,7 +36,6 @@ function UserProvider({ children }: Props) {
 
   useEffect(() => {
     if (userToken) {
-      console.log(userToken);
       try {
         getUserDoc(userToken).then((res) => {
           setCurrentUserDoc(res.user);
@@ -54,5 +53,4 @@ function UserProvider({ children }: Props) {
   };
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
-
 export default UserProvider;
