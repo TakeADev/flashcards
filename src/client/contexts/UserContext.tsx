@@ -24,12 +24,12 @@ function UserProvider({ children }: Props) {
   async function getUserDoc(token: string) {
     const res = await fetch('/api/users/getuser', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       mode: 'cors',
       cache: 'no-cache',
       credentials: 'same-origin',
-      redirect: 'follow',
       referrer: 'no-referrer',
-      body: token,
+      body: JSON.stringify({ token: token }),
     });
     return res.json();
   }
@@ -43,9 +43,8 @@ function UserProvider({ children }: Props) {
       } catch (error) {
         console.log(error);
       }
-      console.log(currentUserDoc);
     }
-  });
+  }, [userToken]);
 
   const value = {
     currentUserDoc,

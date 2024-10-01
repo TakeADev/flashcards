@@ -14,6 +14,7 @@ import * as db from './db/index.js';
 
 const PORT = process.env.SERVER_PORT || 8080;
 const app = express();
+app.use(express.json());
 app.use(bodyParser.json());
 
 app.post('/api/auth/signup', async (req, res, next) => {
@@ -67,10 +68,18 @@ app.post('/api/auth/verify', async (req, res) => {
     });
 });
 
-app.post('/api/users/getuser', (req, res) => {
-  const { token } = req.body;
-  console.log(req.body);
-  res.status(200).json({ user: token });
+app.post('/api/users/getuser', async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    const foundUser: User.DBUser = await db
+      .query(`SELECT * FROM users WHERE id=($1);`, [decoded.userId])
+      .then((res) => res.rows[0]);
+    res.status(200).json({ user: foundUser });
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 ViteExpress.listen(app, PORT as number, () =>
